@@ -50,15 +50,18 @@ public class XMLFileDatabase implements Database{
             return;
         }
 
-        f.setNamespaceAware(true);
+        f.setNamespaceAware(false);
         f.setIgnoringElementContentWhitespace(true);
         f.setSchema(schem);
 
         Validator validator = schem.newValidator();
         validator.setErrorHandler(new ParseErrorHandler());
         try {
-            validator.validate(new SAXSource(new InputSource()));
+            validator.validate(new SAXSource(new InputSource(file)));
         } catch (SAXException ex) {
+            Logger.getLogger(XMLFileDatabase.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        } catch (IOException ex) {
             Logger.getLogger(XMLFileDatabase.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
@@ -78,30 +81,48 @@ public class XMLFileDatabase implements Database{
     }
 
 
-    // <editor-fold defaultstate="open" desc="Interface overrides">
+    // <editor-fold defaultstate="open" desc="Interface overrides - get*">
     @Override
-    public Element getRecordByNameKey(String table, String name)
+    public Element getRecordByNameKey(String table, String fieldName, String value)
     {
+        Element tb = getTable(table);
+        return findByFieldValue(tb,fieldName,value);
+    }
 
+    @Override
+    public Element getRecordSetByRegexp(String table, String fieldName, String value)
+    {
+        Element tb = getTable(table);
+        return findByFieldValueEx(tb,fieldName,value);
     }
 
     @Override
     public Element getRecordByIdKey(String table, int id)
     {
         Element tb = getTable(table);
-        return findByTagAndAttr(tb,"record","id","1");
+        return findByTagAndAttr(tb,"db:record","id","1");
     }
 
     @Override
     public Element getRecordsByReferenceId(String refTable,int id)
     {
-
+        //TODO: Not implemented
+        return null;
     }
 
     @Override
     public Element getRecords(String table)
     {
+        Element resultSet = doc.createElement("resultSet");
+        NodeList nl = getTable(table).getElementsByTagName("db:record");
 
+        for(int i=0;i<nl.getLength();++i)
+        {
+            Element cp = (Element)nl.item(i).cloneNode(true);
+            resultSet.appendChild(cp);
+        }
+
+        return resultSet;
     }
     //</editor-fold>
 
@@ -110,8 +131,10 @@ public class XMLFileDatabase implements Database{
     private Element findByTagAndAttr(Element e, String tagName, String attrName, String value)
     {
         NodeList tb = e.getElementsByTagName(tagName);
-        if(tb == null)
+        if(tb == null){
+            Logger.getLogger(XMLFileDatabase.class.getName()).log(Level.WARNING, value + " NOT FOUND!");
             return null;
+        }
 
         for(int i=0;i<tb.getLength();++i)
         {
@@ -127,14 +150,15 @@ public class XMLFileDatabase implements Database{
 
     private Element findByFieldValue(Element table, String fieldName, String value)
     {
-        NodeList tb = table.getElementsByTagName("record");
+        NodeList tb = table.getElementsByTagName("db:record");
 
         for(int i=0;i<tb.getLength();++i)
         {
             Element n = (Element) tb.item(i);
-            Element f = findByTagAndAttr(n,"stringField","name",fieldName);
+            Element f = findByTagAndAttr(n,"db:stringField","name",fieldName);
+                            
             if(f == null)
-                f = findByTagAndAttr(n,"intField","name",fieldName);
+                f = findByTagAndAttr(n,"db:intField","name",fieldName);
 
             if(f != null)
             {
@@ -149,19 +173,22 @@ public class XMLFileDatabase implements Database{
     {
         Element x = doc.createElement("resultSet");
         Pattern pt = Pattern.compile(value);
-        NodeList tb = table.getElementsByTagName("record");
+        NodeList tb = table.getElementsByTagName("db:record");
 
         for(int i=0;i<tb.getLength();++i)
         {
             Element n = (Element) tb.item(i);
-            Element f = findByTagAndAttr(n,"stringField","name",fieldName);
+            Element f = findByTagAndAttr(n,"db:stringField","name",fieldName);
             if(f == null)
-                f = findByTagAndAttr(n,"intField","name",fieldName);
+                f = findByTagAndAttr(n,"db:intField","name",fieldName);
 
             if(f != null)
             {
                     if(pt.matcher(f.getTextContent()).matches())
-                    x.appendChild(n);
+                    {
+                        Element cp = (Element) n.cloneNode(true);
+                        x.appendChild(cp);
+                    }
             }
         }
         return x;
@@ -170,7 +197,7 @@ public class XMLFileDatabase implements Database{
 
     private Element getTable(String table)
     {
-        return findByTagAndAttr(root,"dataTable","name",table);
+        return findByTagAndAttr(root,"db:dataTable","name",table);
     }
     // </editor-fold>
 

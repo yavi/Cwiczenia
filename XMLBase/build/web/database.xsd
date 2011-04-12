@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://xml.yavi.biz/schema/database"
+    xmlns:tns="http://xml.yavi.biz/schema/database"
+    elementFormDefault="qualified">
+
+<xsd:element name="database">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element name="dataTable" type="tns:DataTable" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+    <xsd:complexType name="DataTable">
+        <xsd:sequence>
+            <xsd:element name="record" maxOccurs="unbounded" minOccurs="0" type="tns:Record"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="keyField" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="Record">
+        <xsd:sequence>
+            <xsd:element name="stringField" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="intField" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:int">
+                            <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="relation" type="tns:RelationEntry" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:int"/>
+    </xsd:complexType>
+    <xsd:complexType name="RelationEntry">
+        <xsd:sequence>
+            <xsd:element name="relId" maxOccurs="unbounded" type="xsd:int"/>
+        </xsd:sequence>
+        <xsd:attribute name="refTable" type="xsd:string" use="required"/>
+    </xsd:complexType>
+</xsd:schema>
