@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : database.xml
+    Created on : 12 kwiecień 2011, 12:39
+    Author     : yavi
+    Description:
+        Purpose of the document follows.
+-->
+
+<db:database  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+   xmlns:db='http://xml.yavi.biz/schema/database'
+   xsi:schemaLocation='http://xml.yavi.biz/schema/database database.xsd'>
+    <db:dataTable name="ksiazki" keyField="tytul">
+        <db:record id="1">
+            <db:stringField name="tytul">Tytuł książki 1</db:stringField>
+        </db:record>
+    </db:dataTable>
+    <db:dataTable name="autorzy" keyField="imieNazwisko">
+        <db:record id="1">
+            <db:stringField name="imieNazwisko">Jan Kowalski</db:stringField>
+        </db:record>
+    </db:dataTable>
+    <db:dataTable name="autRel" keyField="id">
+        <db:record>
+            <db:intField name="id">1</db:intField>
+            <db:intField name="autorzy">1</db:intField>
+            <db:intField name="ksiazki">1</db:intField>
+        </db:record>
+    </db:dataTable>
+</db:database>
